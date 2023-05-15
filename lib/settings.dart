@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:macau_exam/theme.dart';
-import 'package:macau_exam/footer.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({Key? key}) : super(key: key);
@@ -16,7 +14,7 @@ class _SettingsPageState extends State<SettingsPage> {
       body: Center(
         child: Text(
           '設定',
-          style: Theme.of(context).textTheme.headline4,
+          style: Theme.of(context).textTheme.headlineMedium,
         ),
       ),
     );

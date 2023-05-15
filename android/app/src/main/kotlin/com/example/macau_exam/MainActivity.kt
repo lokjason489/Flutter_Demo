@@ -1,4 +1,4 @@
-package com.example.macau_exam
+package com.macau.exam
 
 import io.flutter.embedding.android.FlutterActivity
 
