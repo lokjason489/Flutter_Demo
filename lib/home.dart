@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:macau_exam/dialog.dart';
 
 class HomePage extends StatelessWidget {
@@ -20,32 +21,28 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('My App'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('Welcome to My App!',
-                style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 16),
-            Text(
-              'Home',
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text('title'.tr, style: Theme.of(context).textTheme.titleLarge),
+          const SizedBox(height: 16),
+          Text(
+            'subtitle'.tr,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.headlineMedium,
+          ),
+          const SizedBox(height: 32),
+          TextButton(
+            onPressed: () => onPressed(context),
+            child: Text(
+              'showDialog'.tr,
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.headlineMedium,
             ),
-            const SizedBox(height: 32),
-            TextButton(
-              onPressed: () => onPressed(context),
-              child: const Text(
-                'Show Dialog',
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

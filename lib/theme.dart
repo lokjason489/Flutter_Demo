@@ -17,21 +17,6 @@ final ThemeData lightTheme = ThemeData(
     onError: Color(0xFFFFFFFF), // on error color (white)
     brightness: Brightness.light,
   ),
-  // colorScheme: const ColorScheme(
-  //   primary: Color(0xFF93c4fd), // primary color (rgb 165 243 252)
-  //   primaryContainer: Color(0xFF75E4F2),
-  //   secondary: Color(0xFF7ab1f5), // secondary color (purple)
-  //   secondaryContainer: Color(0xFF0060A3),
-  //   surface: Color(0xFFF2F2F2), // surface color (light grey)
-  //   background: Color(0xFFFFFFFF), // background color (white)
-  //   error: Color(0xFFE53935), // error color (red)
-  //   onPrimary: Color(0xFFFFFFFF), // on primary color (white)
-  //   onSecondary: Color(0xFF000000), // on secondary color (black)
-  //   onSurface: Color(0xFF333333), // on surface color (dark grey)
-  //   onBackground: Color(0xFF333333), // on background color (dark grey)
-  //   onError: Color(0xFFFFFFFF), // on error color (white)
-  //   brightness: Brightness.light,
-  // ),
   appBarTheme: const AppBarTheme(
     backgroundColor: Color.fromARGB(0, 0, 0, 0),
   ),

@@ -3,6 +3,7 @@ import 'package:macau_exam/home.dart';
 import 'package:macau_exam/ExamPage.dart';
 import 'package:macau_exam/settings.dart';
 import 'package:macau_exam/profile.dart';
+import 'package:get/get.dart';
 
 class NavigationItem {
   final String title;
@@ -41,27 +42,26 @@ final List<NavigationItem> navigationItems = [
 ];
 
 class MyFooter extends StatefulWidget {
-  final PageController pageController;
   final int currentIndex;
-  const MyFooter(
-      {Key? key, required this.pageController, required this.currentIndex})
-      : super(key: key);
+  const MyFooter({Key? key, required this.currentIndex}) : super(key: key);
   @override
   _MyFooterState createState() => _MyFooterState();
 }
 
 class _MyFooterState extends State<MyFooter> {
   int _selectedIndex = 0;
+  final PageController _pageController = Get.find<PageController>();
+
   @override
   void initState() {
     super.initState();
     _selectedIndex = widget.currentIndex;
-    widget.pageController.addListener(_handlePageViewChange);
+    _pageController.addListener(_handlePageViewChange);
   }
 
   void _handlePageViewChange() {
     setState(() {
-      _selectedIndex = widget.pageController.page!.round();
+      _selectedIndex = _pageController.page!.round();
     });
   }
 
@@ -70,50 +70,48 @@ class _MyFooterState extends State<MyFooter> {
     final screenWidth = MediaQuery.of(context).size.width;
     //check is not mobile than the icon and text will be bigger and in the same line
     return SizedBox(
-        height: screenWidth > 500 ? 65 : 60,
-        child: Stack(
-          alignment: AlignmentDirectional.topStart,
-          children: [
-            NavigationBar(
-              animationDuration: const Duration(milliseconds: 300),
-              backgroundColor: Theme.of(context).colorScheme.background,
-              indicatorColor: Theme.of(context).colorScheme.onSecondary,
-              surfaceTintColor: Theme.of(context).colorScheme.secondary,
-              shadowColor: Theme.of(context).colorScheme.secondaryContainer,
-              selectedIndex: _selectedIndex,
-              labelBehavior: screenWidth > 500
-                  ? NavigationDestinationLabelBehavior.alwaysShow
-                  : NavigationDestinationLabelBehavior.alwaysHide,
-              onDestinationSelected: (index) {
-                setState(() {
-                  // _selectedIndex = index;
-                  widget.pageController.animateToPage(
-                    index,
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeInOut,
-                  );
-                });
-              },
-              destinations: navigationItems
-                  .map((e) => NavigationDestination(
-                      icon: Icon(e.icon,
-                          color: Theme.of(context).colorScheme.onPrimary),
-                      selectedIcon: Icon(e.activeIcon,
-                          color: Theme.of(context).colorScheme.primary),
-                      tooltip: e.title,
-                      label: e.title))
-                  .toList(),
-            ),
-            // Positioned(
-            //   top: 0,
-            //   left: screenWidth / navigationItems.length * _selectedIndex,
-            //   width: screenWidth / navigationItems.length,
-            //   child: Container(
-            //     height: 2,
-            //     color: Theme.of(context).colorScheme.onPrimary,
-            //   ),
-            // ),
-          ],
-        ));
+      height: screenWidth > 500 ? 65 : 60,
+      child: NavigationBar(
+        animationDuration: const Duration(milliseconds: 300),
+        backgroundColor: Theme.of(context).colorScheme.background,
+        indicatorColor: Theme.of(context).colorScheme.onSecondary,
+        surfaceTintColor: Theme.of(context).colorScheme.secondary,
+        shadowColor: Theme.of(context).colorScheme.secondaryContainer,
+        selectedIndex: _selectedIndex,
+        labelBehavior: screenWidth > 500
+            ? NavigationDestinationLabelBehavior.alwaysShow
+            : NavigationDestinationLabelBehavior.alwaysHide,
+        onDestinationSelected: (index) {
+          setState(() {
+            // _selectedIndex = index;
+            _pageController.animateToPage(
+              index,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+            );
+          });
+        },
+        destinations: navigationItems
+            .map(
+              (e) => NavigationDestination(
+                  icon: Icon(e.icon,
+                      color: Theme.of(context).colorScheme.onPrimary),
+                  selectedIcon: Icon(e.activeIcon,
+                      color: Theme.of(context).colorScheme.primary),
+                  tooltip: e.title,
+                  label: e.title),
+            )
+            .toList(),
+      ),
+      // Positioned(
+      //   top: 0,
+      //   left: screenWidth / navigationItems.length * _selectedIndex,
+      //   width: screenWidth / navigationItems.length,
+      //   child: Container(
+      //     height: 2,
+      //     color: Theme.of(context).colorScheme.onPrimary,
+      //   ),
+      // ),
+    );
   }
 }

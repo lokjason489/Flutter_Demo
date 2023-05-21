@@ -1,13 +1,7 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:macau_exam/appSetting.dart';
-import 'package:macau_exam/themeProvider.dart';
-import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
-Future<void> saveThemeData(bool isDarkModeEnabled) async {
-  final prefs = await SharedPreferences.getInstance();
-  prefs.setBool('isDarkModeEnabled', isDarkModeEnabled);
-}
+import 'package:macau_exam/glassContainer.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
@@ -17,6 +11,9 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  bool isErrorOccurred = false;
+  final ImageProvider emptyImage = AssetImage('assets/images/empty.png');
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -50,61 +47,100 @@ class _ProfilePageState extends State<ProfilePage> {
           icon: Icon(Icons.settings,
               color: Theme.of(context).colorScheme.onPrimary, size: 28),
         ),
-        actions: [
-          if (Theme.of(context).brightness == Brightness.light)
-            IconButton(
-                onPressed: () {
-                  Provider.of<ThemeProvider>(context, listen: false)
-                      .toggleTheme(value: true);
-                },
-                icon: Icon(Icons.dark_mode,
-                    color: Theme.of(context).colorScheme.onPrimary)),
-          if (Theme.of(context).brightness == Brightness.dark)
-            IconButton(
-                onPressed: () {
-                  Provider.of<ThemeProvider>(context, listen: false)
-                      .toggleTheme(value: false);
-                },
-                icon: Icon(Icons.light_mode,
-                    color: Theme.of(context).colorScheme.onPrimary))
-        ],
       ),
       // backgroundColor: Colors.white,
       body: Column(
         children: [
           SizedBox(
-              child: Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Theme.of(context).colorScheme.primary,
-                  Theme.of(context).colorScheme.primaryContainer,
-                ],
-              ),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(0, 30, 0, 30),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const CircleAvatar(
-                    radius: 50,
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    'John Doe',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 5),
-                  Text(
-                    'john.doe@example.com',
-                    style: Theme.of(context).textTheme.bodyLarge,
-                  ),
-                ],
-              ),
+              child: GlassContainer(
+            margin: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+            padding: const EdgeInsets.fromLTRB(10, 25, 10, 25),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Stack(
+                  children: [
+                    Hero(
+                      tag: 'profileImage',
+                      child: CircleAvatar(
+                        key: const ValueKey('profileImage'),
+                        radius: 50,
+                        backgroundImage: isErrorOccurred
+                            ? emptyImage
+                            : const NetworkImage(
+                                'https://placehold.co/500x500/png'),
+                        onBackgroundImageError: (exception, stackTrace) {
+                          setState(() {
+                            isErrorOccurred = true;
+                          });
+                        },
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 2,
+                      right: 2,
+                      child: Container(
+                        width: 25,
+                        height: 25,
+                        transformAlignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color:
+                              Theme.of(context).colorScheme.secondaryContainer,
+                        ),
+                        child: IconButton(
+                          onPressed: () {
+                            //open the image dialog
+                            Navigator.of(context).push(PageRouteBuilder(
+                                opaque: false,
+                                barrierDismissible: true,
+                                pageBuilder: (BuildContext context, _, __) {
+                                  return Container(
+                                    padding: EdgeInsets.all(50),
+                                    child: Hero(
+                                      tag: 'profileImage',
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          image: DecorationImage(
+                                            image: isErrorOccurred
+                                                ? emptyImage
+                                                : const NetworkImage(
+                                                    'https://placehold.co/500x500/png'),
+                                            fit: BoxFit.contain,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                }));
+                          },
+                          padding: const EdgeInsets.all(0),
+                          icon: Icon(Icons.search,
+                              color: Theme.of(context).colorScheme.onPrimary,
+                              size: 14),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(width: 20),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 10),
+                    Text(
+                      'John Doe',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      'john.doe@example.com',
+                      style: Theme.of(context).textTheme.bodyLarge,
+                    ),
+                  ],
+                )
+              ],
             ),
           )),
           Expanded(
