@@ -1,15 +1,10 @@
 // ignore: file_names
 import 'package:flutter/material.dart';
 import 'package:macau_exam/themeController.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'dart:io' show Platform;
 import 'package:macau_exam/glassContainer.dart';
 import 'package:get/get.dart';
 import 'package:macau_exam/translationController.dart';
-
-final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-    FlutterLocalNotificationsPlugin();
+import 'package:permission_handler/permission_handler.dart';
 
 class AppSetting extends StatefulWidget {
   const AppSetting({Key? key}) : super(key: key);
@@ -18,8 +13,8 @@ class AppSetting extends StatefulWidget {
   _AppSettingState createState() => _AppSettingState();
 }
 
-class _AppSettingState extends State<AppSetting> {
-  bool isEnableNotification = false;
+class _AppSettingState extends State<AppSetting> with WidgetsBindingObserver {
+  late PermissionStatus status = PermissionStatus.granted;
   final ThemeController _themeController = Get.find<ThemeController>();
   final TranslationController _translationController =
       Get.find<TranslationController>();
@@ -37,43 +32,14 @@ class _AppSettingState extends State<AppSetting> {
     return const Icon(Icons.close, color: Colors.black38);
   });
 
-  void _checkNotificationPermission() async {
-    final PermissionStatus status = await Permission.notification.status;
-    setState(() {
-      isEnableNotification = status.isGranted;
-    });
-  }
-
   Future<void> _requestPermissions() async {
-    if (Platform.isIOS || Platform.isMacOS) {
-      await flutterLocalNotificationsPlugin
-          .resolvePlatformSpecificImplementation<
-              IOSFlutterLocalNotificationsPlugin>()
-          ?.requestPermissions(
-            alert: true,
-            badge: true,
-            sound: true,
-          );
-      await flutterLocalNotificationsPlugin
-          .resolvePlatformSpecificImplementation<
-              MacOSFlutterLocalNotificationsPlugin>()
-          ?.requestPermissions(
-            alert: true,
-            badge: true,
-            sound: true,
-          );
-    } else if (Platform.isAndroid) {
-      // final AndroidFlutterLocalNotificationsPlugin? androidImplementation =
-      //     flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
-      //         AndroidFlutterLocalNotificationsPlugin>();
-
-      // final bool? granted = await androidImplementation?.requestPermission();
-      Permission.notification.request();
-      var granted = await Permission.notification.isGranted;
-      setState(() {
-        isEnableNotification = granted;
-      });
-    }
+    Permission.notification.request().then(
+          (value) => setState(
+            () {
+              status = value;
+            },
+          ),
+        );
   }
 
   Future<void> _revokeNotificationPermission(BuildContext context) async {
@@ -89,9 +55,6 @@ class _AppSettingState extends State<AppSetting> {
             child: Text('Cancel'),
             onPressed: () {
               Navigator.of(context).pop(false);
-              setState(() {
-                isEnableNotification = true;
-              });
             },
           ),
           TextButton(
@@ -104,9 +67,16 @@ class _AppSettingState extends State<AppSetting> {
       ),
     );
     if (result) {
-      openAppSettings();
+      openAppSettings().then(
+        (value) => _checkNotificationPermission().then(
+          (value) => setState(
+            () {
+              status = value;
+            },
+          ),
+        ),
+      );
     }
-    // }
   }
 
   void _showBottomSheet(BuildContext context) {
@@ -121,8 +91,8 @@ class _AppSettingState extends State<AppSetting> {
                 selected: _translationController.currLang.languageCode == 'tc',
                 selectedColor: Theme.of(context).colorScheme.primary,
                 title: const Text('繁體中文', textAlign: TextAlign.center),
-                onTap: () => {
-                      _translationController
+                onTap: () async => {
+                      await _translationController
                           .setLocale(const Locale('tc', 'TC')),
                     }),
             ListTile(
@@ -130,8 +100,9 @@ class _AppSettingState extends State<AppSetting> {
               selected: _translationController.currLang.languageCode == 'en',
               selectedColor: Theme.of(context).colorScheme.primary,
               title: const Text('English', textAlign: TextAlign.center),
-              onTap: () => {
-                _translationController.setLocale(const Locale('en', 'US')),
+              onTap: () async => {
+                await _translationController
+                    .setLocale(const Locale('en', 'US')),
               },
             ),
             ListTile(
@@ -139,8 +110,9 @@ class _AppSettingState extends State<AppSetting> {
               selected: _translationController.currLang.languageCode == 'sc',
               selectedColor: Theme.of(context).colorScheme.primary,
               title: const Text('简体中文', textAlign: TextAlign.center),
-              onTap: () => {
-                _translationController.setLocale(const Locale('sc', 'SC')),
+              onTap: () async => {
+                await _translationController
+                    .setLocale(const Locale('sc', 'SC')),
               },
             ),
           ],
@@ -149,10 +121,39 @@ class _AppSettingState extends State<AppSetting> {
     );
   }
 
+  Future<PermissionStatus> _checkNotificationPermission() async {
+    return await Permission.notification.status;
+  }
+
   @override
   void initState() {
+    _checkNotificationPermission().then(
+      (value) => setState(
+        () {
+          status = value;
+        },
+      ),
+    );
     super.initState();
-    _checkNotificationPermission();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) async {
+    if (state == AppLifecycleState.resumed) {
+      final granted = await Permission.notification.isGranted;
+      if (granted) {
+        setState(() {
+          status = PermissionStatus.granted;
+        });
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
   }
 
   @override
@@ -276,7 +277,7 @@ class _AppSettingState extends State<AppSetting> {
                   ),
                   const Spacer(),
                   Switch(
-                    value: isEnableNotification,
+                    value: status.isGranted,
                     onChanged: (value) {
                       //disable notification
                       if (!value) {

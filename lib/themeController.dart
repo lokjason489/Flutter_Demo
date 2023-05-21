@@ -1,35 +1,40 @@
-// ignore: file_names
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:get/get.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:get_storage/get_storage.dart';
 
 class ThemeController extends GetxController {
   late final RxBool _isDarkMode;
 
   bool get isDarkMode => _isDarkMode.value;
+  final _box = GetStorage();
 
   @override
-  void onInit() {
+  Future<void> onInit() async {
     _isDarkMode = false.obs;
-    loadThemeData();
+    await loadThemeData();
     super.onInit();
   }
 
-  void loadThemeData() async {
-    final pref = await SharedPreferences.getInstance();
-    final isDarkModeEnabled = pref.getBool('isDarkModeEnabled') ?? false;
-    _isDarkMode.value = isDarkModeEnabled;
-    Get.changeThemeMode(isDarkModeEnabled ? ThemeMode.dark : ThemeMode.light);
+  Future<void> loadThemeData() async {
+    bool? isDarkMode = _box.read('IsDarkModeEnabled');
+    if (isDarkMode == null) {
+      isDarkMode =
+          SchedulerBinding.instance.platformDispatcher.platformBrightness ==
+              Brightness.dark;
+      await _box.write('IsDarkModeEnabled', isDarkMode);
+    }
+    _isDarkMode.value = isDarkMode;
+    Get.changeThemeMode(isDarkMode ? ThemeMode.dark : ThemeMode.light);
   }
 
-  void saveThemeData(bool isDarkModeEnabled) async {
-    final pref = await SharedPreferences.getInstance();
-    await pref.setBool('isDarkModeEnabled', isDarkModeEnabled);
+  Future<void> saveThemeData(bool isDarkModeEnabled) async {
+    await _box.write('IsDarkModeEnabled', isDarkModeEnabled);
   }
 
-  void toggleTheme(bool value) {
+  Future<void> toggleTheme(bool value) async {
     _isDarkMode.value = value;
-    saveThemeData(value);
+    await saveThemeData(_isDarkMode.value);
     Get.changeThemeMode(value ? ThemeMode.dark : ThemeMode.light);
     update();
   }

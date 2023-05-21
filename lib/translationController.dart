@@ -1,46 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class TranslationController extends GetxController {
-  late Locale _lang = TranslationService.fallbackLocale;
-  late SharedPreferences prefs;
+  late Locale _lang = Get.locale ?? const Locale('en', 'US');
 
+  Locale get fallbackLocale => TranslationService.fallbackLocale;
   Locale get currLang => _lang;
+  late TranslationService _translationService;
 
   @override
   Future<void> onInit() async {
     super.onInit();
-    prefs = await SharedPreferences.getInstance();
+    await TranslationService().onInit();
     Get.put(TranslationService());
-    String? lang = prefs.getString('language');
-    if (lang == null) {
-      _lang = TranslationService.fallbackLocale;
-      await prefs.setString('language', _lang.languageCode);
-      setLocale(_lang);
-    } else {
-      _lang = Locale(lang);
-      setLocale(_lang);
-    }
+    _translationService = Get.find<TranslationService>();
   }
 
-  void setLocale(Locale value) async {
+  Future<void> setLocale(Locale value) async {
     _lang = value;
-    final pref = await SharedPreferences.getInstance();
-    await pref.setString('language', value.languageCode);
-    Get.updateLocale(value);
-    Get.find<TranslationService>().setLocale(value, pref);
+    await _translationService.setLocale(value);
     update();
-  }
-
-  Future<void> getLocale() async {
-    String? lang = prefs.getString('language');
-    if (lang == null) {
-      _lang = TranslationService.fallbackLocale;
-    } else {
-      _lang = Locale(lang);
-    }
   }
 }
 
@@ -55,21 +35,19 @@ class TranslationService extends Translations {
   final _box = GetStorage();
 
   Future<void> onInit() async {
-    SharedPreferences _prefs = await SharedPreferences.getInstance();
     String? lang = _box.read('language');
     if (lang == null) {
+      _box.write('language', fallbackLocale.languageCode);
       lang = fallbackLocale.languageCode;
-      await _box.write('language', lang);
     }
     final locale = Locale(lang);
     Get.updateLocale(locale);
-    await setLocale(locale, _prefs);
   }
 
-  Future<void> setLocale(Locale locale, SharedPreferences prefs) async {
+  Future<void> setLocale(Locale locale) async {
     final langCode = locale.languageCode;
     Get.updateLocale(locale);
-    await prefs.setString('language', langCode);
+    await _box.write('language', langCode);
   }
 
   final Map<String, String> en = {

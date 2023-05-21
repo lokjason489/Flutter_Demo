@@ -8,12 +8,14 @@ import 'package:macau_exam/profile.dart';
 import 'package:macau_exam/themeController.dart';
 import 'package:get/get.dart';
 import 'package:macau_exam/translationController.dart';
-
+import 'package:get_storage/get_storage.dart';
+import 'package:permission_handler/permission_handler.dart';
 // import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // MobileAds.instance.initialize();
+  await GetStorage.init();
   runApp(const MyApp());
 }
 
@@ -35,10 +37,19 @@ class _MyAppState extends State<MyApp> {
   final ThemeController _themeController = Get.put(ThemeController());
   final TranslationController _translationController =
       Get.put(TranslationController());
+  late bool isAskedNotification;
+  final _box = GetStorage();
 
   @override
   void initState() {
     super.initState();
+    isAskedNotification = _box.read('isAskedNotification') ?? false;
+    if (!isAskedNotification) {
+      Permission.notification.request().then((value) {
+        _box.write('isAskedNotification', true);
+        print(value);
+      });
+    }
   }
 
   @override
@@ -51,7 +62,7 @@ class _MyAppState extends State<MyApp> {
     return GetMaterialApp(
       title: 'My App',
       locale: _translationController.currLang,
-      fallbackLocale: const Locale('en', 'US'),
+      fallbackLocale: _translationController.fallbackLocale,
       translations: TranslationService(),
       theme: lightTheme,
       darkTheme: darkTheme,
@@ -61,6 +72,7 @@ class _MyAppState extends State<MyApp> {
           child: PageView(
             key: const Key('pageView'),
             controller: _pageController,
+            physics: const NeverScrollableScrollPhysics(),
             children: const [
               HomePage(),
               ExamPage(),
