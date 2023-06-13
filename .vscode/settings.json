@@ -1,3 +1,8 @@
 {
-    "java.configuration.updateBuildConfiguration": "interactive"
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "cmake.sourceDirectory": "F:/FlutterProject/macau_exam/build/windows/_deps/nuget-subbuild",
+    "cSpell.words": [
+        "autofocus",
+        "unfocus"
+    ]
 }
