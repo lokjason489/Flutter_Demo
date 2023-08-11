@@ -35,6 +35,10 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
+    aaptOptions {
+        noCompress "webp"
+    }
+
     kotlinOptions {
         jvmTarget = '1.8'
     }
@@ -61,6 +65,7 @@ android {
             signingConfig signingConfigs.debug
         }
     }
+
 }
 
 flutter {
