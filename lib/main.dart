@@ -34,7 +34,7 @@ class MyApp extends StatefulWidget {
 
 final List<Widget> _page = [
   const HomePage(),
-  const ExamPage(),
+  const StickerPage(),
   const SettingsPage(),
   const ProfilePage(),
 ];
