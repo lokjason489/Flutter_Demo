@@ -15,7 +15,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   bool isShowSearchBar = false;
   late TextEditingController _controller;
-
+  static const Size _kDefaultTestViewportSize = Size(800.0, 600.0);
   DateTime _selectedDay = DateTime.now();
   DateTime _focusedDay = DateTime.now();
   CalendarFormat _calendarFormat = CalendarFormat.month;
@@ -44,7 +44,7 @@ class _HomePageState extends State<HomePage> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Theme.of(context).colorScheme.background,
-      builder: (context) => Container(
+      builder: (context) => SizedBox(
         height: MediaQuery.of(context).size.height * 0.7,
         child: Column(
           children: [
@@ -241,6 +241,7 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
         body: Column(
+          mainAxisSize: MainAxisSize.max,
           children: [
             SizedBox(
               height: 70,
@@ -280,70 +281,74 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
-            GlassContainer(
-              margin: const EdgeInsets.all(25),
-              child: TableCalendar(
-                headerStyle: HeaderStyle(
-                  formatButtonVisible: true,
-                  titleCentered: true,
-                  formatButtonDecoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.secondaryContainer,
-                      borderRadius: const BorderRadius.all(Radius.circular(20)),
-                      border: Border.all(color: Colors.transparent)),
+            SizedBox(
+              width: MediaQuery.of(context).size.width,
+              child: GlassContainer(
+                margin: const EdgeInsets.only(left: 25, right: 25, top: 25),
+                child: TableCalendar(
+                  headerStyle: HeaderStyle(
+                    formatButtonVisible: true,
+                    titleCentered: true,
+                    formatButtonDecoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.secondaryContainer,
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(20)),
+                        border: Border.all(color: Colors.transparent)),
+                  ),
+                  rowHeight: 60,
+                  daysOfWeekHeight: 24,
+                  calendarFormat: _calendarFormat,
+                  formatAnimationCurve: Curves.easeInOutCirc,
+                  formatAnimationDuration: const Duration(milliseconds: 300),
+                  pageAnimationCurve: Curves.easeInToLinear,
+                  pageAnimationDuration: const Duration(milliseconds: 300),
+                  availableCalendarFormats: Map<CalendarFormat, String>.from({
+                    CalendarFormat.month: _translationController.currLang ==
+                                const Locale('tc', 'TC') ||
+                            _translationController.currLang ==
+                                const Locale('sc', 'SC')
+                        ? '月'
+                        : 'Month',
+                    CalendarFormat.twoWeeks: _translationController.currLang ==
+                                const Locale('tc', 'TC') ||
+                            _translationController.currLang ==
+                                const Locale('sc', 'SC')
+                        ? '兩星期'
+                        : 'Two weeks',
+                    CalendarFormat.week: _translationController.currLang ==
+                                const Locale('tc', 'TC') ||
+                            _translationController.currLang ==
+                                const Locale('sc', 'SC')
+                        ? '一星期'
+                        : 'Week'
+                  }),
+                  firstDay: DateTime.utc(2010, 10, 16),
+                  lastDay: DateTime.utc(2030, 3, 14),
+                  focusedDay: _focusedDay,
+                  currentDay: DateTime.now(),
+                  locale: Get.locale!.languageCode == 'tc'
+                      ? 'zh_CN'
+                      : Get.locale!.languageCode == "sc"
+                          ? 'zh_CN'
+                          : Get.locale!.languageCode,
+                  selectedDayPredicate: (day) {
+                    return isSameDay(_selectedDay, day);
+                  },
+                  onDaySelected: (selectedDay, focusedDay) {
+                    setState(() {
+                      _selectedDay = selectedDay;
+                      _focusedDay =
+                          focusedDay; // update `_focusedDay` here as well
+                    });
+                  },
+                  onFormatChanged: (format) {
+                    setState(() {
+                      _calendarFormat = format;
+                    });
+                  },
                 ),
-                rowHeight: 60,
-                daysOfWeekHeight: 24,
-                calendarFormat: _calendarFormat,
-                formatAnimationCurve: Curves.easeInOutCirc,
-                formatAnimationDuration: const Duration(milliseconds: 500),
-                pageAnimationCurve: Curves.easeInToLinear,
-                pageAnimationDuration: const Duration(milliseconds: 500),
-                availableCalendarFormats: Map<CalendarFormat, String>.from({
-                  CalendarFormat.month: _translationController.currLang ==
-                              const Locale('tc', 'TC') ||
-                          _translationController.currLang ==
-                              const Locale('sc', 'SC')
-                      ? '月'
-                      : 'Month',
-                  CalendarFormat.twoWeeks: _translationController.currLang ==
-                              const Locale('tc', 'TC') ||
-                          _translationController.currLang ==
-                              const Locale('sc', 'SC')
-                      ? '兩星期'
-                      : 'Two weeks',
-                  CalendarFormat.week: _translationController.currLang ==
-                              const Locale('tc', 'TC') ||
-                          _translationController.currLang ==
-                              const Locale('sc', 'SC')
-                      ? '一星期'
-                      : 'Week'
-                }),
-                firstDay: DateTime.utc(2010, 10, 16),
-                lastDay: DateTime.utc(2030, 3, 14),
-                focusedDay: _focusedDay,
-                currentDay: DateTime.now(),
-                locale: Get.locale!.languageCode == 'tc'
-                    ? 'zh_CN'
-                    : Get.locale!.languageCode == "sc"
-                        ? 'zh_CN'
-                        : Get.locale!.languageCode,
-                selectedDayPredicate: (day) {
-                  return isSameDay(_selectedDay, day);
-                },
-                onDaySelected: (selectedDay, focusedDay) {
-                  setState(() {
-                    _selectedDay = selectedDay;
-                    _focusedDay =
-                        focusedDay; // update `_focusedDay` here as well
-                  });
-                },
-                onFormatChanged: (format) {
-                  setState(() {
-                    _calendarFormat = format;
-                  });
-                },
               ),
-            )
+            ),
           ],
         ),
         floatingActionButton: FloatingActionButton(
